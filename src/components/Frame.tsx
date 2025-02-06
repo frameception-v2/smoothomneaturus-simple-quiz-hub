@@ -22,17 +22,94 @@ import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
 import { PROJECT_TITLE } from "~/lib/constants";
 
-function ExampleCard() {
+function QuizCard() {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const handleAnswer = (answerIndex: number) => {
+    setSelectedAnswer(answerIndex);
+    
+    if (answerIndex === QUIZ_QUESTIONS[currentQuestion].correct) {
+      setScore(score + 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < QUIZ_QUESTIONS.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+    } else {
+      setIsFinished(true);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to the Frame Template</CardTitle>
+        <CardTitle>Maschine Capabilities Quiz</CardTitle>
         <CardDescription>
-          This is an example card that you can customize or remove
+          Test your knowledge of current Maschine features
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Label>Place content in a Card here.</Label>
+        {!isFinished ? (
+          <div className="flex flex-col gap-4">
+            <div className="text-sm font-medium">
+              Question {currentQuestion + 1}/{QUIZ_QUESTIONS.length}
+            </div>
+            <h3 className="text-lg font-semibold">
+              {QUIZ_QUESTIONS[currentQuestion].question}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {QUIZ_QUESTIONS[currentQuestion].answers.map((answer, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(index)}
+                  className={`p-2 text-left rounded-md ${
+                    selectedAnswer === index
+                      ? 'bg-purple-100 dark:bg-purple-900'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {answer}
+                </button>
+              ))}
+            </div>
+            {selectedAnswer !== null && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {QUIZ_QUESTIONS[currentQuestion].explanation}
+                </p>
+                <button
+                  onClick={handleNext}
+                  className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  {currentQuestion < QUIZ_QUESTIONS.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-4">Quiz Complete!</h3>
+            <p className="text-lg">
+              Your score: {score}/{QUIZ_QUESTIONS.length}
+            </p>
+            <button
+              onClick={() => {
+                setCurrentQuestion(0);
+                setSelectedAnswer(null);
+                setScore(0);
+                setIsFinished(false);
+              }}
+              className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            >
+              Restart Quiz
+            </button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -140,7 +217,7 @@ export default function Frame() {
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-700 dark:text-gray-300">
           {PROJECT_TITLE}
         </h1>
-        <ExampleCard />
+        <QuizCard />
       </div>
     </div>
   );
